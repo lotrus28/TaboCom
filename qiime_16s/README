@@ -1,0 +1,4 @@
+This folder contains scripts required for closed reference binning in QIIME.
+QIIME version used: QIIME-1.9.1-amd64
+
+BLOOM.fasta contains contaminating and blooming bacteria sequences that should be filtered out of fastq-files prior to binning
