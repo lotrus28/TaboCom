@@ -1,5 +1,0 @@
-This folder contains files required for closed-reference binning of 16S fastq-reads from American Gut Project.
-
-BLOOM.fasta
-This file contains the list of 10 contaminating reads that should be excluded from fastq-files before binning.
-More about AGP contaminants read here: http://americangut.org/removing-blooming-bacterial-sequences-from-american-gut-data/
