@@ -31,3 +31,8 @@ These contain various scripts that are launched by teach_models.sh and that carr
 = SparCC_source
 This folder contains SparCC tool developed elsewhere that permits compositional data correlation analysis.
 Several scripts have been modified to avoid errors specific to our laboratory server. In case these scripts fail to work feel free to utilize the original ones.
+
+=scrambled_samples
+This folder contains a script to generate scrambled testing samples to validate our model.
+This script considers total sample to have more than 40 samples as it does not scramble the last 40 samples in each OTU-table.
+These 40 samples will later be set aside as a testing set.
