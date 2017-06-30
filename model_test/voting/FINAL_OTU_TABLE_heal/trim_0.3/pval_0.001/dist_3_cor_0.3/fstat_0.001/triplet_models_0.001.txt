@@ -1,0 +1,1 @@
+Response	Predictor1	Predictor2	Coef_p1	Coef_p2	Intercept
