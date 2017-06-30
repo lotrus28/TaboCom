@@ -116,101 +116,81 @@ get_pair_models_table = function(path_to_cor = NA, path_to_counts = NA,
     res_names <- unique(sig_pairs[seq(2, length(sig_pairs), 2)])
     
     # Empty matrix to contain linear models
-    all_models = matrix(list(NA),
-                        ncol = length(union(res_names, pred_names)),
-                        nrow = length(union(res_names, pred_names))
-                        )
+    all_models = matrix(list(NA), ncol = length(res_names), nrow = length(pred_names))
     
-    rownames(all_models) <- union(res_names, pred_names)
-    colnames(all_models) <- union(res_names, pred_names)
-    
-    # Is this legit?
+    rownames(all_models) <- pred_names
+    colnames(all_models) <- res_names
     L = length(sig_pairs)/2.
     count_models = 0
     
     # Fill the matrix with models
       for (i in 1:L) 
     {
-        pred_resp = list(
-                        direct = c(sig_pairs[(i*2)-1], sig_pairs[i*2], NA),
-                        reverse = c(sig_pairs[i*2], sig_pairs[(i*2)-1], NA)
-                        )
-        
-        # Reverse models ARE checked
-        for (k in c('direct', 'reverse')) {
-          
-          predictor = pred_resp[k][1]
-          response = pred_resp[k][2]
-          
-          temp = as.data.frame(t(rbind(initial_data[response,],initial_data[predictor,])))
-          colnames(temp) <- c('resp','pred')
-          
-          # Remove all zero-pairs but one
-          temp_not_zeros = temp[apply(temp,1,function(row) !all(row ==0 )),]
-          temp_zeros = temp[apply(temp,1,function(row) all(row ==0 )),]
-          if (nrow(temp_zeros) > 1) {
-            temp = rbind(temp_not_zeros, c(0,0))
-          } else {
-            temp = rbind(temp_not_zeros, temp_zeros)
-          }
-          
-          # Get rid of outliers
-          # If insufficient data - go to next pair
-          outs <- tryCatch({
-            dd.plot(temp)$outliers
-          }, error = function(e) {
-            print(e)
-            -1
-          })
-          
-          if (outs == -1) next
-          temp <- temp[!outs,]
-          
-          # Skip if a column is full of zeroes
-          if (length(temp[,colSums(temp^2) == 0]) > 0) next
-          text = paste('resp', 'pred', sep = ' ~ ')
-          param <- list(formula = text, data = temp)
-          model <- do.call(lm, param)
-          
-          # f - how much a model with regression is better than
-          # an intercept only model
-          tryCatch({
-            f = summary(model)$fstatistic
-          }, warning=function(w) {
-            message("Warning: ", conditionMessage(w))
-            print(text)
-          })
-          
-          # Calculate pValue of a model
-          # based on the # of bootstrapped models
-          # w. better F-statistics
-          sim_F <- get_bootstrap(temp,num_boot)
-          true_F = pf(f[1],f[2],f[3],lower.tail = FALSE)
-          pV = length(sim_F[true_F > sim_F]) / length(sim_F)
-          
-          pred_resp[k][3] = pV
-          # print(paste0('pValue: ', pV))
-          
-          if (pV< fstat_thr) 
-          {
-            count_models = count_models+1
-            # Somehow predict wont work if I touch $call
-            # model$call <- NULL
-            
-            # At first I used this way of saving lists to a dataframe
-            # all_models[[predictor,response]] <-  list(c(model))
-            # But it is unstable. Why so? No idea
-            
-            # So I decided to make a list-containing matrix
-            # and fill it with lists
-            all_models[predictor,response] <-  list(model)
-          } 
-        }
-        
-        
+      # Reverse models are not checked
+      predictor = sig_pairs[(i*2)-1]
+      response = sig_pairs[i*2]
+      
+      temp = as.data.frame(t(rbind(initial_data[response,],initial_data[predictor,])))
+      colnames(temp) <- c('resp','pred')
+      
+      # Remove all zero-pairs but one
+      temp_not_zeros = temp[apply(temp,1,function(row) !all(row ==0 )),]
+      temp_zeros = temp[apply(temp,1,function(row) all(row ==0 )),]
+      if (nrow(temp_zeros) > 1) {
+        temp = rbind(temp_not_zeros, c(0,0))
+      } else {
+        temp = rbind(temp_not_zeros, temp_zeros)
       }
-    
-    ####
+      
+      # Get rid of outliers
+      # If insufficient data - go to next pair
+      outs <- tryCatch({
+        dd.plot(temp)$outliers
+      }, error = function(e) {
+		print(e)
+        -1
+      })
+
+      if (outs == -1) next
+      temp <- temp[!outs,]
+      
+      # Skip if a column is full of zeroes
+      if (length(temp[,colSums(temp^2) == 0]) > 0) next
+      text = paste('resp', 'pred', sep = ' ~ ')
+      param <- list(formula = text, data = temp)
+      model <- do.call(lm, param)
+      # f - how much a model with regression is better than
+      # an intercept only model
+      tryCatch({
+        f = summary(model)$fstatistic
+      }, warning=function(w) {
+        message("Warning: ", conditionMessage(w))
+        print(text)
+      })
+      
+      # Calculate pValue of a model
+      # based on the # of bootstrapped models
+      # w. better F-statistics
+      sim_F <- get_bootstrap(temp,num_boot)
+      true_F = pf(f[1],f[2],f[3],lower.tail = FALSE)
+      pV = length(sim_F[true_F > sim_F]) / length(sim_F)
+      # print(paste0('pValue: ', pV))
+      
+      if (pV< fstat_thr) 
+      {
+        count_models = count_models+1
+        # Somehow predict wont work if I touch $call
+        # model$call <- NULL
+        
+        # At first I used this way of saving lists to a dataframe
+        # all_models[[predictor,response]] <-  list(c(model))
+        # But it is unstable. Why so? No idea
+        
+        # So I decided to make a list-containing matrix
+        # and fill it with lists
+        all_models[predictor,response] <-  list(model)
+      }
+    }
     
     print(paste0('Models built: ', count_models))
     # Remove empty columns and rows
