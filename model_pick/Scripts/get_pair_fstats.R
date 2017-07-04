@@ -3,19 +3,13 @@ library(pbkrtest)
 library(mvoutlier)
 library(boot)
 
-# args = commandArgs(trailingOnly=TRUE)
-# print(args)
-# edges = args[1]
-# counts = args[2]
-# tax_code = args[3]
-# out = args[4]
-# assign("fstat_thr", as.numeric(args[5]), envir = .GlobalEnv)
-
-edges = 'edges_0.3_3.txt'
-counts = 'train.txt'
-tax_code = 'tax_code.txt'
-out = './'
-assign("fstat_thr", 0.001, envir = .GlobalEnv)
+args = commandArgs(trailingOnly=TRUE)
+print(args)
+edges = args[1]
+counts = args[2]
+tax_code = args[3]
+out = args[4]
+assign("fstat_thr", as.numeric(args[5]), envir = .GlobalEnv)
 
 edges_to_sig_cor = function(p_edges) {
   edges = read.csv(p_edges, sep = '\t',stringsAsFactors = F)
