@@ -54,7 +54,7 @@ def main():
     # cor_thr = 0.3
     # global tax_thr
     # tax_thr = 3
-    get_edges(sig_cor, out)
+    get_edges(sig_cor, out, tax_name)
 
 if __name__ == '__main__':
     main()

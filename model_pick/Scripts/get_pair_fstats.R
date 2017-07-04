@@ -3,15 +3,19 @@ library(pbkrtest)
 library(mvoutlier)
 library(boot)
 
-args = commandArgs(trailingOnly=TRUE)
-print(args)
+# args = commandArgs(trailingOnly=TRUE)
+# print(args)
+# edges = args[1]
+# counts = args[2]
+# tax_code = args[3]
+# out = args[4]
+# assign("fstat_thr", as.numeric(args[5]), envir = .GlobalEnv)
 
-edges = args[1]
-counts = args[2]
-tax_code = args[3]
-out = args[4]
-
-assign("fstat_thr", as.numeric(args[5]), envir = .GlobalEnv)
+edges = 'edges_0.3_3.txt'
+counts = 'train.txt'
+tax_code = 'tax_code.txt'
+out = './'
+assign("fstat_thr", 0.001, envir = .GlobalEnv)
 
 edges_to_sig_cor = function(p_edges) {
   edges = read.csv(p_edges, sep = '\t',stringsAsFactors = F)
@@ -139,8 +143,8 @@ get_pair_models_table = function(path_to_cor = NA, path_to_counts = NA,
         # Reverse models ARE checked
         for (k in c('direct', 'reverse')) {
           
-          predictor = pred_resp[k][1]
-          response = pred_resp[k][2]
+          predictor = pred_resp[[k]][1]
+          response = pred_resp[[k]][2]
           
           temp = as.data.frame(t(rbind(initial_data[response,],initial_data[predictor,])))
           colnames(temp) <- c('resp','pred')
@@ -179,6 +183,7 @@ get_pair_models_table = function(path_to_cor = NA, path_to_counts = NA,
           }, warning=function(w) {
             message("Warning: ", conditionMessage(w))
             print(text)
+            print(paste0(response, ' ~ ', predictor))
           })
           
           # Calculate pValue of a model
@@ -300,8 +305,8 @@ if (readLines(edges, n=1) == "No edges based on pair correlations"){
   # mystery
   # outfile = paste0(out,'/pair_models_', toString(fstat_thr), '.txt')
   outfile = paste0('pair_models_', toString(fstat_thr), '.txt')
-  setwd(args[4])
-  print(file.exists(args[4]))
+  setwd(out)
+  print(file.exists(out))
   if (fstats == 'fail') {
     writeLines('No significant models', outfile)
   } else {
