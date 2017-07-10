@@ -10,7 +10,7 @@ p_all_models = args[2]
 assign("pval_thr", as.numeric(args[3]), envir = .GlobalEnv)
 out = args[4]
 
-# p_edges = 'edges_0.4_3.txt'
+# p_edges = 'edges_0.2_0.txt'
 # p_all_models = 'all_models.txt'
 # pval_thr = 0.001
 # out = './'
@@ -29,18 +29,27 @@ pull_edges <- function(p_edges, p_all_models){
       predictor = pred_resp[[k]][1]
       response = pred_resp[[k]][2]
       temp = all_models[all_models['Predictor'] == predictor,]
+      if ( nrow(temp) == 0) {
+        next
+      }
       temp = temp[temp['Response'] == response,]
+      if ( nrow(temp) == 0) {
+        next
+      }
       if (temp$P_value < pval_thr) {
         pair_models = rbind(pair_models,temp[1,], make.row.names = F)
       }
     }
+  }
+  if (nrow(pair_models) == 0){
+    return('fail')
   }
   return(pair_models)
 }
 
 # Case of empty pair correlation graph
 if (readLines(p_edges, n=1) == "No edges based on pair correlations"){
-  outfile = paste0(out,'/pair_models_', toString(fstat_thr), '.txt')
+  outfile = paste0(out,'/pair_models_', toString(pval_thr), '.txt')
   writeLines('No significant models', outfile)
 } else {
 # Case of non-empty pair correlation graph
@@ -51,7 +60,7 @@ if (readLines(p_edges, n=1) == "No edges based on pair correlations"){
   # hmmmmmmmmm
   # mystery
   # outfile = paste0(out,'/pair_models_', toString(fstat_thr), '.txt')
-  outfile = paste0('pair_models_', toString(fstat_thr), '.txt')
+  outfile = paste0('pair_models_', toString(pval_thr), '.txt')
   setwd(out)
   print(file.exists(out))
   if (fstats == 'fail') {
