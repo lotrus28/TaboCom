@@ -29,7 +29,7 @@ pull_edges <- function(p_edges, p_all_models){
       predictor = pred_resp[[k]][1]
       response = pred_resp[[k]][2]
       temp = all_models[all_models['Predictor'] == predictor,]
-      if ( nrow(temp) == 0) {
+      if ( nrow(temp) == 0 ) {
         next
       }
       temp = temp[temp['Response'] == response,]

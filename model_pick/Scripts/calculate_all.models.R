@@ -17,7 +17,7 @@ out = args[7]
 # p_counts = 'train.txt'
 # p_tax_code = 'tax_code.txt'
 # p_sig.cor = 'sig_cor_0.05.txt'
-# assign("fstat_min", 0.05, envir = .GlobalEnv)
+# assign("fstat_min", 0.01, envir = .GlobalEnv)
 # assign("fstat_max", 0.05, envir = .GlobalEnv)
 # cor_thr = 0.2
 # out = './'
@@ -96,7 +96,7 @@ get_pair_models_table = function(path_to_cor = NA, path_to_counts = NA,
         if(is.null(F_stat)) {
           F_score <- 1
         } else {
-          F_score <- pf(F_stat[1],F_stat[2],F_stat[3],lower.tail = FALSE)
+          F_score <- pf(F_stat[1],F_stat[2],F_stat[3],lower.tail = FALSE)[[1]]
         }
         return(F_score)
       }
@@ -189,12 +189,13 @@ get_pair_models_table = function(path_to_cor = NA, path_to_counts = NA,
           # Calculate pValue of a model
           # based on the # of bootstrapped models
           # w. better F-statistics
-          sim_F <- get_bootstrap(temp,num_boot)
-          true_F = pf(f[1],f[2],f[3],lower.tail = FALSE)
+          sim_F <- get_bootstrap(temp,num_boot)[,1]
+          true_F = pf(f[1],f[2],f[3],lower.tail = FALSE)[[1]]
           pV = length(sim_F[true_F > sim_F]) / length(sim_F)
           
           # print(paste0('pValue: ', pV))
-          if (pV< fstat_thr) 
+          model_pvals[predictor,response] <- pV
+          if (pV< boot_pV) 
           {
             count_models = count_models+1
             # Somehow predict wont work if I touch $call
@@ -207,11 +208,8 @@ get_pair_models_table = function(path_to_cor = NA, path_to_counts = NA,
             # So I decided to make a list-containing matrix
             # and fill it with lists
             all_models[predictor,response] <-  list(model)
-            model_pvals[predictor,response] <- pV
-          } 
+          }
         }
-        
-        
       }
     
     ####
@@ -287,7 +285,7 @@ sig.cor = sig.cor[order(rownames(sig.cor)) , order(colnames(sig.cor))]
 
 counts = read.table(p_counts, stringsAsFactors = F, row.names = 1)
 
-temp = get_pair_models_table(cor_table = sig.cor, counts = counts, bootnum = 1/fstat_min, boot_pV = fstat_max)
+temp = get_pair_models_table(cor_table = sig.cor, counts = counts, bootnum = 1/fstat_min, boot_pV = fstat_max/5)
 pair_mod = temp$mods
 pvals = temp$pvs
 
