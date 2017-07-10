@@ -35,9 +35,9 @@ params = pd.DataFrame(columns=columns)
 
 values = {}
 values['Taxon_trim'] = np.r_[2:6] / 10.
-values['SparCC_cor'] = np.r_[1:5] / 10.
+values['SparCC_cor'] = np.r_[2:5] / 10.
 values['SparCC_pval'] = [0.001, 0.01, 0.05]
-values['Tax_adjacency'] = np.r_[0:5]
+values['Tax_adjacency'] = np.r_[0:4]
 values['Pair_fstat'] = [0.001, 0.01, 0.05]
 values['RMSE_sign'] = [0.33, 0.5, 0.66, 1., 1.5, 2.0, 3.0]
 
@@ -75,45 +75,71 @@ if not(os.path.exists(filename)):
 # command = "rm %se" % path
 # subprocess.Popen(command, shell=True)
 
-with fileinput.FileInput(path, inplace=True, backup='.bak') as file:
-    for line in file:
-        print(line.replace(']', 'KET').replace('[','BRA').replace('-','SLASH'), end='')
+# with fileinput.FileInput(path, inplace=True, backup='.bak') as file:
+#     for line in file:
+#         print(line.replace(']', 'KET').replace('[','BRA').replace('-','SLASH'), end='')
+#
+# # First, create SparCC-outputs
+# job = "Tax_trim"
+# for i in values['Taxon_trim']:
+#     teach_predictor(path, [i, min(values['SparCC_pval']), 100, 100, 100], [0,1,1,1,1], job, None)
+# wait = job
+#
+# # time.sleep(10)
+#
+# # Then one level lower
+# job = "Spar_pval"
+# Tt_Sp = [x for x in itertools.product(values['Taxon_trim'],
+#                                         values['SparCC_pval'])]
+# # Make it so first all SparCC with lowest P-value are calculated
+# # Otherwise
+# Tt_Sp = sorted(Tt_Sp, key=lambda x: x[1])
+# for i in Tt_Sp:
+#     teach_predictor(path, [i[0], i[1], 100, 100, 100], [1,0,1,1,1], job, wait)
+#     # time.sleep(5)
+# wait = job
 
-# First, create SparCC-outputs
-job = "Tax_trim"
+# time.sleep(3000)
+#
+# # And we go all the way down
+# job = "Filter_sig"
+# Tt_Sp_Sc_Ta = [x for x in itertools.product(values['Taxon_trim'],
+#                                             values['SparCC_pval'],
+#                                             values['SparCC_cor'],
+#                                             values['Tax_adjacency'])]
+# for i in Tt_Sp_Sc_Ta:
+#     teach_predictor(path, [i[0], i[1], i[2], int(i[3]), -1], [1,1,0,0,1], job, wait)
+#     # time.sleep(3)
+# wait = job
+#
+# # time.sleep(1000)
+
+
+#######!!!!!!!!!!!!!
+#######!!!!!!!!!!!!!
+
+job = 'Calc_models'
+wait = 'none'
 for i in values['Taxon_trim']:
-    teach_predictor(path, [i, min(values['SparCC_pval']), 100, 100, 100], [0,1,1,1,1], job, None)
+    fstat_min = str(min(values['SparCC_pval']))
+    fstat_max = str(max(values['SparCC_pval']))
+    cor_thr = str(min(values['SparCC_cor']))
+    p_sigcor = './{}/trim_{}/pval_{}/sig_cor_{}.txt'.format(cond,str(i),fstat_max,fstat_max)
+    p_counts = './{}/trim_{}/train.txt'.format(cond,str(i))
+    p_taxcode = './{}/trim_{}/tax_code.txt'.format(cond,str(i))
+    out = './{}/trim_{}/'.format(cond,str(i))
+
+    command = '''echo 'R CMD BATCH "--args {} {} {} {} {} {} {}" ./Scripts/calculate_all.models.R' '''.format(p_sigcor, p_counts, p_taxcode, fstat_min, fstat_max, cor_thr, out)
+    command = command + '| qsub -N ' + job + ' -hold_jid ' + wait + ' -cwd'
+    subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    time.sleep(5)
+
+time.sleep(5000)
+
+#######!!!!!!!!!!!!!
+#######!!!!!!!!!!!!!
+
 wait = job
-
-time.sleep(10)
-
-# Then one level lower
-job = "Spar_pval"
-Tt_Sp = [x for x in itertools.product(values['Taxon_trim'],
-                                        values['SparCC_pval'])]
-# Make it so first all SparCC with lowest P-value are calculated
-# Otherwise
-Tt_Sp = sorted(Tt_Sp, key=lambda x: x[1])
-for i in Tt_Sp:
-    teach_predictor(path, [i[0], i[1], 100, 100, 100], [1,0,1,1,1], job, wait)
-wait = job
-
-time.sleep(10)
-
-# And we go all the way down
-
-job = "Filter_sig"
-Tt_Sp_Sc_Ta = [x for x in itertools.product(values['Taxon_trim'],
-                                            values['SparCC_pval'],
-                                            values['SparCC_cor'],
-                                            values['Tax_adjacency'])]
-for i in Tt_Sp_Sc_Ta:
-    teach_predictor(path, [i[0], i[1], i[2], int(i[3]), -1], [1,1,0,0,1], job, wait)
-    # time.sleep(2.5)
-wait = job
-
-time.sleep(10)
-
 job = 'pair_Fstat'
 Tt_Sp_Sc_Ta_Pf = [x for x in itertools.product(values['Taxon_trim'],
                                                 values['SparCC_pval'],
@@ -122,7 +148,7 @@ Tt_Sp_Sc_Ta_Pf = [x for x in itertools.product(values['Taxon_trim'],
                                                 values['Pair_fstat'])]
 for i in Tt_Sp_Sc_Ta_Pf:
     teach_predictor(path, [i[0], i[1], i[2], i[3], i[4]], [1,1,1,1,0], job, wait)
-    time.sleep(1)
+    time.sleep(20)
 
 for f in ["Rplots.pdf", "cov_mat_SparCC.out", "get_pair_fstats.Rout"]:
     command = 'echo "rm %s" | qsub -N CleanUp -hold_jid pair_Fstats -cwd' % f

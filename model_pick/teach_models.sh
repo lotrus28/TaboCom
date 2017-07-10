@@ -35,8 +35,8 @@ BOOT_ITER=$(echo 1/$Sparcc_pval | bc)
 last=$(expr $BOOT_ITER - 1)
 job_prefix=$Taxon_trim
 
-# echo "$Taxon_trim $Sparcc_pval $Sparcc_cor $Tax_adjacency $Pair_fstat"
-# echo "$Tt $Sp $Sc $Ta $Pf"
+echo "$Taxon_trim $Sparcc_pval $Sparcc_cor $Tax_adjacency $Pair_fstat"
+echo "$Tt $Sp $Sc $Ta $Pf"
 
 # If no precalculations have been made
 # then make a new output folder
@@ -51,8 +51,8 @@ if [ "$Tt" -eq 0 ]; then
 		# Produces 3 otu tables: 1 w.training set patient, 2nd w.test set and 3d w.validation set
 		# For convenience taxonomies are reduced to short tags. Tag-taxonomy correspondence is written to'tax_code.txt'
 		python3 $SCRIPT_PATH/separate_sets_and_shorten_tax_names.py $collapsed_otu_table $out_trim $Taxon_trim
-		R CMD BATCH "--args train.txt  $out_trim" $SCRIPT_PATH/deseq_norm.R
-		echo "Data cut and normalized"
+		# R CMD BATCH "--args train.txt  $out_trim" $SCRIPT_PATH/deseq_norm.R
+		# echo "Data cut and normalized"
 		sleep 20s
 	fi
 	
@@ -188,7 +188,8 @@ if [ "$Pf" -eq 0 ]; then
 		fi
 		# Back to R
 		# Now we need to get pair linear models with our edges
-		R CMD BATCH "--args $edges $out_trim/train.txt $out_trim/tax_code.txt $out_fstat $Pair_fstat" $SCRIPT_PATH/get_pair_fstats.R
+#######!!!!!!!!!!!!!
+		R CMD BATCH "--args $edges ./$out_all/all_models.txt $Pair_fstat $out_fstat" $SCRIPT_PATH/get_pair_fstats.R
 		echo "Calculations over"
 	fi
 fi
