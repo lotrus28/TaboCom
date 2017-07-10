@@ -186,10 +186,8 @@ if [ "$Pf" -eq 0 ]; then
 			# Kostylik
 			mv -f $out_adj/edges_${Sparcc_cor}_${Tax_adjacency}.0.txt $edges
 		fi
-		# Back to R
-		# Now we need to get pair linear models with our edges
-#######!!!!!!!!!!!!!
-		R CMD BATCH "--args $edges ./$out_all/all_models.txt $Pair_fstat $out_fstat" $SCRIPT_PATH/get_pair_fstats.R
+		
+		R CMD BATCH "--args $edges $out_trim/all_models.txt $Pair_fstat $out_fstat" $SCRIPT_PATH/get_pair_fstats.R
 		echo "Calculations over"
 	fi
 fi
