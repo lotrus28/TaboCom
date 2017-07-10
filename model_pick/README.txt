@@ -36,3 +36,5 @@ Several scripts have been modified to avoid errors specific to our laboratory se
 This folder contains a script to generate scrambled testing samples to validate our model.
 This script considers total sample to have more than 40 samples as it does not scramble the last 40 samples in each OTU-table.
 These 40 samples will later be set aside as a testing set.
+
+ALWAYS MAKE SURE YOUR SCRIPTS HAVE 'LF' INSTEAD OF 'CRLF' AT ENDLINES!
