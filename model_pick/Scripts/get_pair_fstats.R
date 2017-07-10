@@ -39,13 +39,13 @@ pull_edges <- function(p_edges, p_all_models){
 }
 
 # Case of empty pair correlation graph
-if (readLines(edges, n=1) == "No edges based on pair correlations"){
+if (readLines(p_edges, n=1) == "No edges based on pair correlations"){
   outfile = paste0(out,'/pair_models_', toString(fstat_thr), '.txt')
   writeLines('No significant models', outfile)
 } else {
 # Case of non-empty pair correlation graph
   
-  fstats = pull_edges(edges, all_models)
+  fstats = pull_edges(p_edges, p_all_models)
   
   # This line used to work, but now it doesn't.
   # hmmmmmmmmm
