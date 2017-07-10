@@ -3,16 +3,32 @@ import itertools
 import sys
 import time
 import multiprocessing
+import numpy as np
 
-global num_compl
-num_compl = 0
+num_compl = None
+
+# params = 'E:\\Lab\\FHM\\AGP\\Parallel\\py\\PARAM_FINAL_OTU_TABLE_ibd.txt'
+# ibd_folders = 'E:\\Lab\\FHM\\AGP\\Parallel\\FINAL_OTU_TABLE_ibd'
+# heal_folders = 'E:\\Lab\\FHM\\AGP\\Parallel\\FINAL_OTU_TABLE_heal'
+# out = 'E:\\Lab\\FHM\\AGP\\Parallel\\py\\OUT.txt'
+# test_or_valid = 'test'
+
+ibd_folders = sys.argv[1]
+heal_folders = sys.argv[2]
+out = sys.argv[3]
+test_or_valid = sys.argv[4]
+
+def init(args):
+    global num_compl
+    num_compl = args
+
 
 def acc_for_multiplier(RMSEs, mult):
     heal_RMSE = RMSEs[0]
     ibd_RMSE = RMSEs[1]
     delta = heal_RMSE - (ibd_RMSE * mult)
     delta = ['Healthy' if i < 0 else 'IBD' for i in delta]
-    return(delta)
+    return (delta)
 
 def return_tax_names(ID_to_taxon, profiles):
     tax_code = {}
@@ -22,17 +38,19 @@ def return_tax_names(ID_to_taxon, profiles):
             # tax ID is in the 1st column tax name -- 2nd
             tax_code[temp[0]] = temp[1]
     profiles.index = [tax_code[x] for x in profiles.index]
-    return(profiles)
+    return (profiles)
+
 
 def RMSE_calc(TEMP):
-
     i = TEMP[0]
     params = TEMP[1]
-    global num_compl
-    num_compl += 1
 
-    if num_compl % 100 == 0:
-        print(str(num_compl) + ' out of ' + str(params.shape[0]))
+    global num_compl
+    with num_compl.get_lock():
+        num_compl.value += 1
+
+    if (num_compl.value % 100 == 0):
+        print( 'echo {} out of {}'.format(str(num_compl.value), str(params.shape[0])) )
 
     def profile_triple_SS(profile, models):
         SS = []
@@ -89,13 +107,13 @@ def RMSE_calc(TEMP):
     # print('H_Sp: ' + str(H_Sp))
     # print('H_Ta: ' + str(H_Ta))
     # print('H_Pf: ' + str(H_Pf))
-    
+
     # print('I_Tt: ' + str(I_Tt))
     # print('I_Sc: ' + str(I_Sc))
     # print('I_Sp: ' + str(I_Sp))
     # print('I_Ta: ' + str(I_Ta))
     # print('I_Pf: ' + str(I_Pf))
-    
+
     template = '{}/trim_{}/pval_{}/dist_{}_cor_{}/fstat_{}'
     paths = {k: template.format(x, Tt, Sp, Ta, Sc, Pf)
              for k, x, Tt, Sp, Ta, Sc, Pf in
@@ -137,9 +155,12 @@ def RMSE_calc(TEMP):
                 spec = -1
                 return (i, sens, spec)
 
-        do_models = {k: pd.read_table(v, header=0, index_col=None, sep='\t', engine="python") for k, v in p_do_models.items()}
-        tr_models = {k: pd.read_table(v, header=0, index_col=None, sep='\t', engine="python") for k, v in p_tr_models.items()}
-        test_profile = {k: pd.read_table(v, header=0, index_col=0, sep='\t', engine="python") for k, v in p_test_profile.items()}
+        do_models = {k: pd.read_table(v, header=0, index_col=None, sep='\t', engine="python") for k, v in
+                     p_do_models.items()}
+        tr_models = {k: pd.read_table(v, header=0, index_col=None, sep='\t', engine="python") for k, v in
+                     p_tr_models.items()}
+        test_profile = {k: pd.read_table(v, header=0, index_col=0, sep='\t', engine="python") for k, v in
+                        p_test_profile.items()}
 
         for el in test_profile:
             test_profile[el] = return_tax_names(p_tax[el], test_profile[el])
@@ -163,18 +184,7 @@ def RMSE_calc(TEMP):
     sens = I_RMSE.count('IBD') / float(len(I_RMSE))
     spec = H_RMSE.count('Healthy') / float(len(H_RMSE))
 
-    return(i,spec,sens)
-
-# params = 'E:\\Lab\\FHM\\AGP\\Parallel\\py\\PARAM_FINAL_OTU_TABLE_ibd.txt'
-# ibd_folders = 'E:\\Lab\\FHM\\AGP\\Parallel\\FINAL_OTU_TABLE_ibd'
-# heal_folders = 'E:\\Lab\\FHM\\AGP\\Parallel\\FINAL_OTU_TABLE_heal'
-# out = 'E:\\Lab\\FHM\\AGP\\Parallel\\py\\OUT.txt'
-# test_or_valid = 'test'
-
-ibd_folders = sys.argv[1]
-heal_folders = sys.argv[2]
-out = sys.argv[3]
-test_or_valid = sys.argv[4]
+    return (i, spec, sens)
 
 # This script reads parameters form a txt file
 # The file should contain a header for parameter combinations of both diseassed and helthy patients
@@ -189,33 +199,33 @@ except:
 
     values = {}
 
-    values['H_Taxon_trim'] = [0.3]
-    values['H_SparCC_pval'] = [0.01]
-    values['H_SparCC_cor'] = [0.3]
-    values['H_Tax_adjacency'] = [3]
+    values['H_Taxon_trim'] = np.r_[2:6] / 10.
+    values['H_SparCC_pval'] = [0.001, 0.01, 0.05]
+    values['H_SparCC_cor'] = np.r_[2:5] / 10.
+    values['H_Tax_adjacency'] = np.r_[0:4]
     values['H_Pair_fstat'] = [0.001]
     #
-    values['I_Taxon_trim'] = [0.3]
-    values['I_SparCC_pval'] = [0.01]
-    values['I_SparCC_cor'] = [0.3]
-    values['I_Tax_adjacency'] = [2]
+    values['I_Taxon_trim'] = np.r_[2:6] / 10.
+    values['I_SparCC_pval'] = [0.001, 0.01, 0.05]
+    values['I_SparCC_cor'] = np.r_[2:5] / 10.
+    values['I_Tax_adjacency'] = np.r_[0:4]
     values['I_Pair_fstat'] = [0.001]
     #
-    values['RMSE_sign'] = [1.]
+    values['RMSE_sign'] = [0.33, 0.5, 0.66, 1., 1.5, 2.0, 3.0]
 
     permutations = [x for x in itertools.product(
-                                                values['H_Taxon_trim'],
-                                                values['H_SparCC_pval'],
-                                                values['H_SparCC_cor'],
-                                                values['H_Tax_adjacency'],
-                                                values['H_Pair_fstat'],
-                                                values['I_Taxon_trim'],
-                                                values['I_SparCC_pval'],
-                                                values['I_SparCC_cor'],
-                                                values['I_Tax_adjacency'],
-                                                values['I_Pair_fstat'],
-                                                values['RMSE_sign']
-                                                )]
+        values['H_Taxon_trim'],
+        values['H_SparCC_pval'],
+        values['H_SparCC_cor'],
+        values['H_Tax_adjacency'],
+        values['H_Pair_fstat'],
+        values['I_Taxon_trim'],
+        values['I_SparCC_pval'],
+        values['I_SparCC_cor'],
+        values['I_Tax_adjacency'],
+        values['I_Pair_fstat'],
+        values['RMSE_sign']
+    )]
 
     # Make a file with all parameter combinations
     for set in permutations:
@@ -225,11 +235,13 @@ except:
 
 # Parallelize calculations with multiprocessing
 if __name__ == '__main__':
-    pool = multiprocessing.Pool(processes=25)
+    num_compl = multiprocessing.Value('i', 0)
+
+    pool = multiprocessing.Pool(processes=25, initializer=init, initargs=(num_compl,))
     temp = ([row, params] for row in params.index)
-    res = pool.map(RMSE_calc, temp)
-    j = 0
-    for el in res:
+    res = pool.map_async(RMSE_calc, temp, chunksize=1)
+    res.wait()
+    for el in res.get():
         i = el[0]
         spec = el[1]
         sens = el[2]

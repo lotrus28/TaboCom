@@ -13,7 +13,7 @@ python3 test_patients.py ./PARAM_FINAL_OTU_TABLE_ibd.txt FINAL_OTU_TABLE_ibd FIN
 The script requires a 'CROSS_PARAMETERS.txt' to work. 'CROSS_PARAMETERS.txt' is a table of parameter combinations to use while testing. Unlike 'test_patients.py' this script uses predictive models from two cohorts that were obtained with different parameters. E.g. it can use models with P-value = 0.01 for healthy cohort and P-value = 0.001 for IBD-cohort, while 'test_patients.py' would use the same P-value for both cohorts.
 The script produces this file if it is missing. In this case pay extra attention to parameter combinations that will be present in the resulting table.
 Script launch command:
-python3 par_cross_test_patients.py /data5/bio/runs-galkin/Parallel/FINAL_OTU_TABLE_ibd /data5/bio/runs-galkin/Parallel/FINAL_OTU_TABLE_heal ./test.txt test
+ python3 par_cross_test_patients.py /data5/bio/runs-galkin/Parallel/FINAL_OTU_TABLE_ibd /data5/bio/runs-galkin/Parallel/FINAL_OTU_TABLE_heal ./cross_test.txt test | qsub -N cross -l hostname=node8.net0.pyxis.ripcm.com -cwd
 
 = test.txt
 This is a sample output of test_patients.py
