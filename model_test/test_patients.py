@@ -160,6 +160,6 @@ for i in params.index:
     spec = H_RMSE.count('Healthy') / float(len(H_RMSE))
     params.loc[i, 'Sensitivity'] = sens
     params.loc[i, 'Specificity'] = spec
-    print( str(i) + ' out of ' + str(params.index) )
+    print( str(i) + ' out of ' + str(params.shape[0]) )
 
 params.to_csv(out, sep='\t', index=False)

@@ -30,7 +30,7 @@ def teach_predictor(path, params, same, job, wait):
 
 # Create a df with all possible combinations of parameters
 columns = ['Taxon_trim', 'SparCC_pval', 'SparCC_cor', 'Tax_adjacency',
-           'Pair_fstat', 'RMSE_sign', 'Specificity', 'Selectivity']
+           'Pair_fstat', 'RMSE_sign', 'Specificity', 'Sensitivity']
 params = pd.DataFrame(columns=columns)
 
 values = {}
@@ -38,7 +38,7 @@ values['Taxon_trim'] = np.r_[2:6] / 10.
 values['SparCC_cor'] = np.r_[2:5] / 10.
 values['SparCC_pval'] = [0.001, 0.01, 0.05]
 values['Tax_adjacency'] = np.r_[0:4]
-values['Pair_fstat'] = [0.001, 0.01, 0.05]
+values['Pair_fstat'] = [0.001]
 values['RMSE_sign'] = [0.33, 0.5, 0.66, 1., 1.5, 2.0, 3.0]
 
 # values['Taxon_trim'] = [0.3]
