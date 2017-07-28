@@ -1,8 +1,11 @@
-= ena_download.py
+= ena_download_agp.py
 A script to create ENA API download requests for sequenator runs on IBD or healthy samples.
-Experiment metadata required
+AGP metadata required
 To actually download fastq-files use:
 while read a; do wget "$a"; done < api_ibd.txt
+
+= parse_metadata.py
+More generic script that
 
 = api_ibd.txt
 = api_heal.txt
