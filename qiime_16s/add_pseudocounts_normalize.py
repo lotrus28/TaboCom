@@ -1,8 +1,10 @@
-import sys
-import pandas as pd
 import copy
 import re
+import sys
+
 import numpy as np
+import pandas as pd
+
 
 def add_pseudocounts(counts_path):
 
@@ -13,12 +15,12 @@ def add_pseudocounts(counts_path):
         if tax_lvl == 'k__':
             immediate_higher = None
         else:
-            immediate_higher = ','.join(tax.split(sep=',')[:-1])
+            immediate_higher = ','.join(tax.split(',')[:-1])
 
         if tax_lvl == 's__':
             immediate_lower =None
         else:
-            lower_taxa = [x.split(sep=',') for x in all if ((tax in x) and (x != tax))]
+            lower_taxa = [x.split(',') for x in all if ((tax in x) and (x != tax))]
             if len(lower_taxa) == 0:
                 immediate_lower = None
             else:
@@ -26,7 +28,7 @@ def add_pseudocounts(counts_path):
                 immediate_lower = list(set(immediate_lower))
         return(immediate_higher, immediate_lower)
 
-    counts = pd.read_table(counts_path, sep='\t', index_col=0, header = None, engine = 'python')
+    counts = pd.read_table(counts_path, sep='\t', index_col=0, header = 0, engine = 'python')
     counts['Mean'] = counts.mean(axis=1)
     all_taxes = list(counts.index)
     for tax in all_taxes:
@@ -56,9 +58,9 @@ def main():
         normalized = added/added.loc['k__Bacteria']
     if n == 'ln':
         normalized = added.apply(np.log)
-	if n == 'none':
-		pass
-    normalized.to_csv(out, sep = '\t', header = None)
+    if n == 'none':
+        normalized = added
+    normalized.to_csv(out, sep='\t', header=None)
 
 if __name__ == "__main__":
     main()

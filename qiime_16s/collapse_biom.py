@@ -31,13 +31,13 @@ def collapse_biom(biom,out):
             last_column = now_column
         prev_line = now_line
     values[rows[prev_line]] = num
-    print(values)
+    # print(values)
     lines = []
     with open(out, 'a') as t:
         for el in values:
             temp = el.split('", "metadata": {"taxonomy": [')
             lines.append(temp[0] + '\t' + str(values[el]) + '\t' + temp[1] + '\n')
-        print(lines)
+        # print(lines)
         lines.sort(key = lambda x: int(x.split('\t')[1]), reverse=True)
         for line in lines:
             t.write(line)

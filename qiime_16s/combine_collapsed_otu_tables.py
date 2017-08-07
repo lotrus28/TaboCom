@@ -33,7 +33,6 @@ def main():
     list_of_files = sys.argv[1]
     output = sys.argv[2]
     combined = combine_otu_tables(list_of_files)
-    print()
     print('Combining all OTU-tables')
     combined.to_csv(output, sep = '\t')
 

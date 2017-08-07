@@ -1,6 +1,6 @@
 library(plyr)
 
-args = c('./heal/','./ibd/')
+args = c('./input_data/heal/','./input_data/ibd/')
 
 p_heal_folder = args[1]
 p_ibd_folder = args[2]
@@ -79,7 +79,10 @@ get_err_t <- function(model, sample){
 # Most likely a whole day.
 # So feel fre to parallelize this if you don't have the time
 
-for (mod in rownames(errs)) {
+for (mod in rownames(errs)[6476:]) {
+  if (! is.na(errs[mod,1])) {
+    next
+  }
   print(which(rownames(errs) == mod))
   if (mod == 'Condition') {
     next

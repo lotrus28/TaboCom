@@ -6,7 +6,7 @@ def parse_collapsed(path_counts):
 
     print('Reading file: ' + path_counts)
     with open(path_counts) as f:
-        input = StringIO(f.read().replace('", ""', '').replace('"', '').replace(', ', ',').replace('\0',''))
+        input = StringIO(unicode(f.read().replace('", ""', '').replace('"', '').replace(', ', ',').replace('\0','')))
         counts = pd.read_table(input, sep='\t', index_col=2, header=None, engine='python')
 
     counts = counts[1]
@@ -18,9 +18,9 @@ def add_higher_taxa(counts):
     new_counts = counts.copy()
     for lvl in hier:
         this_lvl_taxa = [x for x in counts.index
-                         if (lvl in x.split(sep=',')[-1])]
+                         if (lvl in x.split(',')[-1])]
         for tax in this_lvl_taxa:
-            tax_terms = tax.split(sep=',')
+            tax_terms = tax.split(',')
             higher_taxa = [','.join(tax_terms[:i + 1]) for i in range(len(tax_terms) - 1)]
             for higher_tax in higher_taxa:
                 if higher_tax in new_counts.index:

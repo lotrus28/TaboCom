@@ -1,7 +1,8 @@
 library(Boruta)
 library(randomForest)
 
-errs = read.table('errs_to_boruta.txt', header = 1, row.names = 1)
+errs = read.table('errs_to_boruta.txt', header = 1, row.names = 1, stringsAsFactors = F)
+# errs = as.data.frame(t(errs))
 ibd_errs = errs[errs['Condition'] == 'IBD',]
 heal_errs = errs[errs['Condition'] == 'Healthy',]
 
@@ -41,11 +42,12 @@ train_errs = train_errs[c(conf,'Condition')]
 classifier <-  randomForest(Condition ~ ., data = train_errs, ntree = 3*length(conf))
 
 
-tesr_errs_cond = test_errs['Condition']
+test_errs_cond = test_errs['Condition']
 test_errs$Condition = NULL
+test_errs[] <- as.numeric(as.character(as.matrix(test_errs)))
 preds = predict(classifier, test_errs[conf])
 
-result=cbind(tesr_errs_cond, preds)
+result=cbind(test_errs_cond, preds)
 result$Quality = NA
 for (i in rownames(result)){
   if (result[i,'Condition'] == 'Healthy' && result[i,'preds'] == 'Healthy') {
