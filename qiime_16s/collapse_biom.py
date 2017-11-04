@@ -15,29 +15,34 @@ def collapse_biom(biom,out):
     # as in biom each column is a single read and each row is a single taxon
     data = data.split('],[')
     rows = rows.split(']}},{"id": "')
-    # Go through matrix and add up all values for each taxon
     values = {}
-    prev_line = 0
-    last_column = 0
-    for el in data:
-        temp = el.split(',')
-        now_line = int(temp[0])
-        if now_line != prev_line:
-            now_column = int(temp[1])
-            # Assign as many count to a taxon as many reads (columns) were asssigned to it
-            # (Every column may have no more than 1 non zero value which is 1)
-            num = now_column - last_column
-            values[rows[prev_line]] = num
-            last_column = now_column
-        prev_line = now_line
-    values[rows[prev_line]] = num
-    # print(values)
+    # Go through matrix and add up all values for each taxon
+    if all([x[-1] == '1' for x in data]):
+        prev_line = 0
+        last_column = 0
+        for el in data:
+            temp = el.split(',')
+            now_line = int(temp[0])
+            if now_line != prev_line:
+                now_column = int(temp[1])
+                # Assign as many count to a taxon as many reads (columns) were asssigned to it
+                # (Every column may have no more than 1 non zero value which is 1)
+                num = now_column - last_column
+                values[rows[prev_line]] = num
+                last_column = now_column
+            prev_line = now_line
+        values[rows[prev_line]] = num
+    else:
+        for i in range(len(data)):
+            if not(rows[i] in values):
+                values[rows[i]] = int(data[i].split(',')[-1])
+            else:
+                values[rows[i]] += int(data[i].split(',')[-1])
     lines = []
     with open(out, 'a') as t:
         for el in values:
             temp = el.split('", "metadata": {"taxonomy": [')
             lines.append(temp[0] + '\t' + str(values[el]) + '\t' + temp[1] + '\n')
-        # print(lines)
         lines.sort(key = lambda x: int(x.split('\t')[1]), reverse=True)
         for line in lines:
             t.write(line)
