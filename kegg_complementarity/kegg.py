@@ -451,36 +451,41 @@ def generate_profiles_by_pathway(models_to_check,profiles_to_check):
             out.to_csv(filename,sep='\t',index=None)
     return()
 	
-	
-vitamin_pathways = {
-    'Thiamin': 'ko00730',
-    'Riboflavin': 'ko00740',
-    'Pyridoxine': 'ko00750',
-    'Nicotinate': 'ko00760',
-    'Pantothenate': 'ko00770',
-    'Biotin': 'ko00780',
-    'Lipoate': 'ko00785',
-    'Folate': 'ko00790',
-    'Retinol': 'ko00830',
-    'Ubiquinone': 'ko00130'
-}
+
+def main():
+
+    vitamin_pathways = {
+        'Thiamin': 'ko00730',
+        'Riboflavin': 'ko00740',
+        'Pyridoxine': 'ko00750',
+        'Nicotinate': 'ko00760',
+        'Pantothenate': 'ko00770',
+        'Biotin': 'ko00780',
+        'Lipoate': 'ko00785',
+        'Folate': 'ko00790',
+        'Retinol': 'ko00830',
+        'Ubiquinone': 'ko00130'
+    }
 
 
-identifiers = [y for x, y in vitamin_pathways.items()]
-edges_files = ['HEALTHY_pair_models_0.001.txt', 'HEALTHY_triplet_models_0.001.txt', 'IBD_pair_models_0.001.txt', 'IBD_triplet_models_0.001.txt']
+    identifiers = [y for x, y in vitamin_pathways.items()]
+    edges_files = ['HEALTHY_pair_models_0.001.txt', 'HEALTHY_triplet_models_0.001.txt', 'IBD_pair_models_0.001.txt', 'IBD_triplet_models_0.001.txt']
 
-edges_files_and_tax_code_and_used_taxons = [
-    ('IBD_0.3_0.001_3_0.3_0.001_pair_models.txt',
-     'IBD_0.3_tax_code.txt',
-     'IBD_0.3_train.txt'),
-    ('HEAL_0.3_0.001_2_0.3_0.001_pair_models.txt',
-     'HEAL_0.3_tax_code.txt',
-     'HEAL_0.3_train.txt'),
-]
+    edges_files_and_tax_code_and_used_taxons = [
+        ('IBD_0.3_0.001_3_0.3_0.001_pair_models.txt',
+         'IBD_0.3_tax_code.txt',
+         'IBD_0.3_train.txt'),
+        ('HEAL_0.3_0.001_2_0.3_0.001_pair_models.txt',
+         'HEAL_0.3_tax_code.txt',
+         'HEAL_0.3_train.txt'),
+    ]
 
-euc = compare_model_dist_to_global(edges_files_and_tax_code_and_used_taxons,
-                                 identifiers, 'all', 'euc')
+    euc = compare_model_dist_to_global(edges_files_and_tax_code_and_used_taxons,
+                                     identifiers, 'all', 'euc')
 
-temp = get_kegg_profiles('br08610.keg', ['ko00780'], edges_files =  ['IBD_0.3_0.001_3_0.3_0.001_pair_models.txt'])
-temp['ko00780'].to_csv('x.txt', sep ='\t')
-generate_profiles_by_pathway(['IBD_0.3_0.001_3_0.3_0.001_pair_models.txt'],['ko00780.txt'])
+    temp = get_kegg_profiles('br08610.keg', ['ko00780'], edges_files =  ['IBD_0.3_0.001_3_0.3_0.001_pair_models.txt'])
+    temp['ko00780'].to_csv('x.txt', sep ='\t')
+    generate_profiles_by_pathway(['IBD_0.3_0.001_3_0.3_0.001_pair_models.txt'],['ko00780.txt'])
+
+if __name__ == '__main__'
+    main()
